@@ -1,4 +1,4 @@
-# mcp-agent
+# Agent Abbott
 
 **Build Effective Agents with Model Context Protocol in TypeScript**
 
