@@ -6,6 +6,9 @@
 
 This library aims to bring the powerful patterns and architecture to the JavaScript ecosystem, enabling developers to create robust and controllable AI agents that can interact with MCP-aware services and tools.
 
+# Demo
+![Research Agent Demo](./static/logs.mp4)
+
 ## Installation
 
 First, create or update your `.npmrc` file with:
