@@ -9,17 +9,6 @@ This library aims to bring the powerful patterns and architecture to the JavaScr
 # Demo
 ![Demo](https://github.com/Bayesian4042/agent-abbott/blob/main/static/demo.mp4)
 
-## Installation
-
-First, create or update your `.npmrc` file with:
-```
-@opengig:registry=https://npm.pkg.github.com
-```
-
-Then
-```bash
-npm install @opengig/agent-abbott
-```
 
 ## Key Capabilities
 
