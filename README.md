@@ -7,7 +7,7 @@
 This library aims to bring the powerful patterns and architecture to the JavaScript ecosystem, enabling developers to create robust and controllable AI agents that can interact with MCP-aware services and tools.
 
 # Demo
-![](./static/logs.mp4)
+![](./static/demo.gif)
 
 ## Installation
 
