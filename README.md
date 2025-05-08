@@ -7,7 +7,7 @@
 This library aims to bring the powerful patterns and architecture to the JavaScript ecosystem, enabling developers to create robust and controllable AI agents that can interact with MCP-aware services and tools.
 
 # Demo
-![](https://github.com/Bayesian4042/agent-abbott/blob/main/static/demo.mp4)
+![Demo](https://github.com/Bayesian4042/agent-abbott/blob/main/static/demo.mp4)
 
 ## Installation
 
