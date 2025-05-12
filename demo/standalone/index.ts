@@ -35,9 +35,9 @@ async function runOrchestrator() {
         url: createSmitheryUrl(
           "https://server.smithery.ai/exa/ws",
           {
-            exaApiKey: "c3a314fb-50c5-44a2-8bf1-f4fb56ffe081"
+            exaApiKey: process.env.EXA_API_KEY,
           },
-          "6063e0bb-f999-444f-9b98-b099817ce2a8"
+          process.env.SMITHERY_SERVER_ID
         )
       }
     ],
