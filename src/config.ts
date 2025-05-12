@@ -7,6 +7,8 @@ export const LANGSMITH_DEBUG = 'LANGSMITH_DEBUG';
 export const DEBUG_MODE = 'DEBUG_MODE';
 export const OPENAI_API_KEY = 'OPENAI_API_KEY';
 export const OPENAI_BASE_URL = 'OPENAI_BASE_URL';
+export const CLAUDE_BASE_URL = 'CLAUDE_BASE_URL';
+export const CLAUDE_API_KEY = 'CLAUDE_API_KEY';
 export const OPENAI_MAX_TOKENS = 'OPENAI_MAX_TOKENS';
 export const LANGSMITH_TRACING = 'LANGSMITH_TRACING';
 export const LANGSMITH_ENDPOINT = 'LANGSMITH_ENDPOINT';
@@ -17,6 +19,8 @@ const allConfigFromEnv = () => {
   return {
     [OPENAI_API_KEY]: process.env[OPENAI_API_KEY] || undefined,
     [OPENAI_BASE_URL]: process.env[OPENAI_BASE_URL] || undefined,
+    [CLAUDE_BASE_URL]: process.env[CLAUDE_BASE_URL] || undefined,
+    [CLAUDE_API_KEY]: process.env[CLAUDE_API_KEY] || undefined,
     [OPENAI_MAX_TOKENS]: process.env[OPENAI_MAX_TOKENS] || undefined,
     [LANGSMITH_DEBUG]: process.env[LANGSMITH_DEBUG] || undefined,
     [DEBUG_MODE]: process.env[DEBUG_MODE] || undefined,

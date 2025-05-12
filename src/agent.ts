@@ -38,7 +38,7 @@ export class Agent {
     this.description = config.description;
     this.serverConfigs = config.serverConfigs;
     this.llm = config.llm;
-    this.maxIterations = config.maxIterations || 5;
+    this.maxIterations = config.maxIterations || 10;
 
     if (config.functions?.length) {
       this.functions = {}
@@ -87,13 +87,34 @@ export class Agent {
 
     while (iterations < this.maxIterations) {
       const tools = await this.listTools();
-      const result = await this.llm.generate({
-        messages: messages,
-        config: {
-          ...config,
-          tools
+      
+      let result;
+      let llmRetryCount = 0;
+      
+      do {
+        try {
+          result = await this.llm.generate({
+            messages: messages,
+            config: {
+              ...config,
+              tools
+            }
+          });
+          break;
+        } catch (error: any) {
+          llmRetryCount++;
+          if (llmRetryCount > 3) { 
+            this.logger.log(LogLevel.ERROR, `[Agent: ${this.name}] LLM generation failed after 3 retries: ${error.message}`);
+            throw error; 
+          }
+          this.logger.log(LogLevel.WARN, `[Agent: ${this.name}] LLM generation failed, retrying (${llmRetryCount}/3): ${error.message}`);
+          await this.delay(Math.pow(2, llmRetryCount - 1) * 1000); // Exponential backoff: 1s, 2s, 4s
         }
-      });
+      } while (llmRetryCount <= 3);
+
+      if (!result) {
+        throw new Error(`[Agent: ${this.name}] Failed to generate LLM response after retries`);
+      }
 
       messages.push({
         role: 'assistant',
@@ -103,13 +124,35 @@ export class Agent {
 
       if ((result.finishReason === 'tool_calls' || result.finishReason === 'function_call') && result.toolCalls?.length) {
         for (const toolCall of result.toolCalls) {
-          this.logger.log(LogLevel.INFO, `[Agent: ${this.name}] executing tool: ${toolCall.function.name}`);
-          const toolResult = await this.callTool(toolCall.function.name, typeof toolCall.function.arguments === 'string'
-            ? JSON.parse(toolCall.function.arguments)
-            : toolCall.function.arguments || {});
-
-          if (!toolResult.content.length) {
-            throw new Error(`Tool: ${toolCall.function.name} call failed`);
+          this.logger.log(LogLevel.INFO, `[Agent: ${this.name}] executing tool: ${toolCall.function.name} arguments: ${toolCall.function.arguments}`);
+          
+          let toolResult;
+          let toolRetryCount = 0;
+          do {
+            try {
+              toolResult = await this.callTool(
+                toolCall.function.name, 
+                typeof toolCall.function.arguments === 'string'
+                  ? JSON.parse(toolCall.function.arguments)
+                  : toolCall.function.arguments || {}
+              );
+              
+              if (!toolResult.content.length) {
+                throw new Error(`Tool: ${toolCall.function.name} call failed with empty content`);
+              }
+              break;
+            } catch (error: any) {
+              toolRetryCount++;
+              if (toolRetryCount > 3) { // If we've already tried 3 times
+                this.logger.log(LogLevel.ERROR, `[Agent: ${this.name}] Tool execution failed after 3 retries: ${error.message}`);
+              }
+              this.logger.log(LogLevel.WARN, `[Agent: ${this.name}] Tool execution failed, retrying (${toolRetryCount}/3): ${error.message}`);
+              await this.delay(Math.pow(2, toolRetryCount - 1) * 1000); // Exponential backoff: 1s, 2s, 4s
+            }
+          } while (toolRetryCount <= 3);
+          
+          if (!toolResult) {
+            throw new Error(`[Agent: ${this.name}] Failed to execute tool ${toolCall.function.name} after retries`);
           }
 
           const toolResultContent = JSON.stringify(toolResult) as string
@@ -175,16 +218,23 @@ export class Agent {
 
   // we can apply some logic here once we run the tool
   private async callTool(toolName: string, args: Object): Promise<any> {
-    const isMCPTool = this.aggregator?.findTool(toolName);
-    if (isMCPTool && this.aggregator) {
-      return this.aggregator.executeTool(toolName, args);
-    }
+    try {
+      const isMCPTool = this.aggregator?.findTool(toolName);
+      if (isMCPTool && this.aggregator) {
+        return this.aggregator.executeTool(toolName, args);
+      }
 
-    if (this.functions?.[toolName]) {
-      return this.functions[toolName].execute(args);
+      if (this.functions?.[toolName]) {
+        return this.functions[toolName].execute(args);
+      }
+    } catch (error: any) {
+      this.logger.log(LogLevel.ERROR, `Error calling tool: ${toolName}: ${error}`);
+      return { error: error?.message };
     }
+  }
 
-    throw new Error(`Tool: ${toolName} not found`);
+  private async delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   public async close() {

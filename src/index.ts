@@ -1,5 +1,6 @@
 export { Agent } from './agent'
 export { Orchestrator } from './workflows/orchestrator/orchestrator'
+export { Router } from './workflows/router/router'
 export { LLMModel as LLMModel } from './llm/llmModel'
 export { App } from './app'
 // types
